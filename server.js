@@ -11,19 +11,18 @@ app.get('/gen', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-
     const page = await browser.newPage();
-    await page.goto('https://www.emailnator.com', { waitUntil: 'networkidle2' });
+    await page.goto('https://gmailnator.com', { waitUntil: 'networkidle2' });
 
-    // জেনারেট বাটনে ক্লিক
-    await page.waitForSelector('button.generate-btn');
-    await page.click('button.generate-btn');
+    // Generate Email বাটনে ক্লিক করা
+    await page.waitForSelector('#btn-gen');
+    await page.click('#btn-gen');
 
-    // নতুন ইমেইল সিলেক্টর থেকে লোড হওয়া ইমেইল নিয়ে আসা
-    await page.waitForSelector('#email-list li');
-    const email = await page.$eval('#email-list li', el => el.textContent.trim());
+    // ইমেইলটা পেতে অপেক্ষা করা
+    await page.waitForSelector('#email');
+    const email = await page.$eval('#email', el => el.textContent.trim());
 
     await browser.close();
 
@@ -41,28 +40,29 @@ app.get('/inbox', async (req, res) => {
   try {
     const browser = await puppeteer.launch({
       headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-
     const page = await browser.newPage();
-    await page.goto('https://www.emailnator.com', { waitUntil: 'networkidle2' });
+    await page.goto('https://gmailnator.com', { waitUntil: 'networkidle2' });
 
-    // ইমেইল ইনপুটে টাইপ করা
-    await page.waitForSelector('input[type="text"]');
-    await page.type('input[type="text"]', email, { delay: 50 });
+    // Email ইনপুটে টাইপ করা
+    await page.waitForSelector('#email-input');
+    await page.focus('#email-input');
+    await page.keyboard.type(email, { delay: 100 });
 
-    // Add email বাটনে ক্লিক করা
-    await page.click('button.add-email-btn');
+    // Inbox বাটনে ক্লিক করা
+    await page.click('#btn-check');
 
-    // ইনবক্স লোডের জন্য অপেক্ষা
-    await page.waitForTimeout(3000);
+    // মেসেজ লোড হতে অপেক্ষা
+    await page.waitForSelector('.mail-list-item');
 
-    // মেসেজ সংগ্রহ
-    const messages = await page.$$eval('.message-item', nodes =>
-      nodes.map(n => ({
-        from: n.querySelector('.from')?.textContent.trim() || 'Unknown',
-        subject: n.querySelector('.subject')?.textContent.trim() || 'No Subject'
-      }))
+    // মেসেজ ডাটা সংগ্রহ
+    const messages = await page.$$eval('.mail-list-item', items =>
+      items.map(item => {
+        const from = item.querySelector('.from')?.textContent.trim() || 'Unknown';
+        const subject = item.querySelector('.subject')?.textContent.trim() || 'No Subject';
+        return { from, subject };
+      })
     );
 
     await browser.close();
@@ -79,5 +79,5 @@ app.get('/inbox', async (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`🚀 Server চলছে: http://localhost:${port}`);
+  console.log(`Server চলছে: http://localhost:${port}`);
 });
