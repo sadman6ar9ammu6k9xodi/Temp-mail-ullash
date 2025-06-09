@@ -1,0 +1,16 @@
+{
+  "name": "gmailnator-api",
+  "version": "1.0.0",
+  "description": "Temporary Gmail generator and inbox fetcher using Gmailnator via Puppeteer.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "YourName",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "puppeteer": "^22.7.0"
+  }
+}
